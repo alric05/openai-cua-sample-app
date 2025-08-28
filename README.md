@@ -21,6 +21,15 @@ Run CLI to let CUA use a local browser window, using [playwright](https://playwr
 python cli.py --computer local-playwright
 ```
 
+### Analytics logging
+
+Every run of the CLI writes interaction analytics to a JSONL file under the
+`logs/` directory. Each user prompt and the model's subsequent actions (such as
+computer interactions, reasoning, and messages) are recorded along with timing
+information and any screenshots in base64 format. These logs can be used to
+compare the behaviour of multiple agents running in parallel or to perform
+custom analysis of agent activity.
+
 > [!NOTE]  
 > The first time you run this, if you haven't used Playwright before, you will be prompted to install dependencies. Execute the command suggested, which will depend on your OS.
 

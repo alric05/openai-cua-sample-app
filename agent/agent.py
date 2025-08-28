@@ -7,7 +7,8 @@ from utils import (
     check_blocklisted_url,
 )
 import json
-from typing import Callable
+import time
+from typing import Callable, Optional
 
 
 class Agent:
@@ -23,6 +24,7 @@ class Agent:
         computer: Computer = None,
         tools: list[dict] = [],
         acknowledge_safety_check_callback: Callable = lambda: False,
+        logger=None,
     ):
         self.model = model
         self.computer = computer
@@ -31,6 +33,8 @@ class Agent:
         self.debug = False
         self.show_images = False
         self.acknowledge_safety_check_callback = acknowledge_safety_check_callback
+        self.logger = logger
+        self.current_prompt_id = None
 
         if computer:
             dimensions = computer.get_dimensions()
@@ -49,11 +53,17 @@ class Agent:
 
     def handle_item(self, item):
         """Handle each item; may cause a computer action + screenshot."""
+        start_time = time.time()
+        record = {"prompt_id": self.current_prompt_id, "type": item.get("type")}
+        output_items = []
+
         if item["type"] == "message":
             if self.print_steps:
                 print(item["content"][0]["text"])
+            record["role"] = item.get("role")
+            record["content"] = item.get("content")
 
-        if item["type"] == "function_call":
+        elif item["type"] == "function_call":
             name, args = item["name"], json.loads(item["arguments"])
             if self.print_steps:
                 print(f"{name}({args})")
@@ -61,15 +71,16 @@ class Agent:
             if hasattr(self.computer, name):  # if function exists on computer, call it
                 method = getattr(self.computer, name)
                 method(**args)
-            return [
+            output_items = [
                 {
                     "type": "function_call_output",
                     "call_id": item["call_id"],
                     "output": "success",  # hard-coded output for demo
                 }
             ]
+            record.update({"name": name, "arguments": args})
 
-        if item["type"] == "computer_call":
+        elif item["type"] == "computer_call":
             action = item["action"]
             action_type = action["type"]
             action_args = {k: v for k, v in action.items() if k != "type"}
@@ -108,15 +119,38 @@ class Agent:
                 check_blocklisted_url(current_url)
                 call_output["output"]["current_url"] = current_url
 
-            return [call_output]
-        return []
+            output_items = [call_output]
+            record.update(
+                {
+                    "action": action,
+                    "call_id": item.get("call_id"),
+                    "screenshot": screenshot_base64,
+                }
+            )
+
+        elif item["type"] == "reasoning":
+            record["summary"] = item.get("summary")
+
+        duration = time.time() - start_time
+        record["duration"] = duration
+
+        if self.logger:
+            self.logger.log(record)
+
+        return output_items
 
     def run_full_turn(
-        self, input_items, print_steps=True, debug=False, show_images=False
+        self,
+        input_items,
+        print_steps: bool = True,
+        debug: bool = False,
+        show_images: bool = False,
+        prompt_id: Optional[str] = None,
     ):
         self.print_steps = print_steps
         self.debug = debug
         self.show_images = show_images
+        self.current_prompt_id = prompt_id
         new_items = []
 
         # keep looping until we get a final response
