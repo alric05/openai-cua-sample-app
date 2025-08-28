@@ -2,9 +2,13 @@ import os
 import json
 import csv
 import base64
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 
-def build_structured_table(log_path: str, output_csv: str | None = None, image_dir: str | None = None) -> str:
+def build_structured_table(
+    log_path: str,
+    output_csv: Optional[str] = None,
+    image_dir: Optional[str] = None,
+) -> str:
     """Convert a JSONL log file to a structured CSV table.
 
     Screenshots in the log are written to ``image_dir`` and the filename is
@@ -36,7 +40,7 @@ def build_structured_table(log_path: str, output_csv: str | None = None, image_d
     os.makedirs(image_dir, exist_ok=True)
 
     step_counters: Dict[str, int] = {}
-    rows: list[Dict[str, Any]] = []
+    rows: List[Dict[str, Any]] = []
 
     with open(log_path, "r", encoding="utf-8") as f:
         for line in f:
