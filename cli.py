@@ -3,6 +3,7 @@ from agent.agent import Agent
 from computers.config import *
 from computers.default import *
 from computers import computers_config
+from analytics.logger import AnalyticsLogger
 
 
 def acknowledge_safety_check_callback(message: str) -> bool:
@@ -46,11 +47,13 @@ def main():
     )
     args = parser.parse_args()
     ComputerClass = computers_config[args.computer]
+    logger = AnalyticsLogger()
 
     with ComputerClass() as computer:
         agent = Agent(
             computer=computer,
             acknowledge_safety_check_callback=acknowledge_safety_check_callback,
+            logger=logger,
         )
         items = []
 
@@ -67,12 +70,14 @@ def main():
             except EOFError as e:
                 print(f"An error occurred: {e}")
                 break
+            prompt_id = logger.new_prompt(user_input)
             items.append({"role": "user", "content": user_input})
             output_items = agent.run_full_turn(
                 items,
                 print_steps=True,
                 show_images=args.show,
                 debug=args.debug,
+                prompt_id=prompt_id,
             )
             items += output_items
             args.input = None
