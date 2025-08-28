@@ -21,6 +21,22 @@ Run CLI to let CUA use a local browser window, using [playwright](https://playwr
 python cli.py --computer local-playwright
 ```
 
+### Analytics logging
+
+Each CLI run generates a unique **agent id** and stores interaction data in a
+structured format under `logs/<agent_id>/`:
+
+- `prompts.csv` – one row per user prompt with the prompt text.
+- `steps.csv` – one row per agent step. Columns include `agent_id`,
+  `prompt_id`, `step_id`, `step_type`, timing information, action details
+  (coordinates, button, typed text, etc.) and the filename of any screenshot.
+- `screenshots/` – base64-encoded images saved as `<step_id>.txt`. The
+  corresponding filenames are referenced in the `screenshot` column of
+  `steps.csv`.
+
+This structure makes it easy to analyse or compare the behaviour of multiple
+agents running in parallel.
+
 > [!NOTE]  
 > The first time you run this, if you haven't used Playwright before, you will be prompted to install dependencies. Execute the command suggested, which will depend on your OS.
 
