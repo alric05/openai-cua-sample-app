@@ -30,6 +30,11 @@ information and any screenshots in base64 format. These logs can be used to
 compare the behaviour of multiple agents running in parallel or to perform
 custom analysis of agent activity.
 
+The helper function `analytics.build_structured_table()` converts a log file
+into a structured CSV table. Screenshots are extracted to image files and the
+table captures the agent, prompt and step identifiers along with action details
+such as click coordinates or typed text.
+
 > [!NOTE]  
 > The first time you run this, if you haven't used Playwright before, you will be prompted to install dependencies. Execute the command suggested, which will depend on your OS.
 

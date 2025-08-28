@@ -16,12 +16,15 @@ class AnalyticsLogger:
         self.log_dir = log_dir
         os.makedirs(self.log_dir, exist_ok=True)
         run_ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-        self.run_id = f"{run_ts}_{uuid.uuid4()}"
-        self.log_path = os.path.join(self.log_dir, f"{self.run_id}.jsonl")
+        # Unique identifier for a single agent session.
+        self.agent_id = f"{run_ts}_{uuid.uuid4()}"
+        self.log_path = os.path.join(self.log_dir, f"{self.agent_id}.jsonl")
 
     def log(self, record: Dict[str, Any]) -> None:
         """Append a record to the log file."""
-        record["run_id"] = self.run_id
+        # Persist the agent identifier on every record so logs can be
+        # correlated later.
+        record["agent_id"] = self.agent_id
         record.setdefault("timestamp", datetime.utcnow().isoformat())
         with open(self.log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record) + "\n")
