@@ -1,7 +1,8 @@
 import time
 import base64
-from typing import List, Dict, Literal
-from playwright.sync_api import sync_playwright, Browser, Page
+from typing import Dict, List, Literal, Optional
+
+from playwright.sync_api import Browser, Page, sync_playwright
 from utils import check_blocklisted_url
 
 # Optional: key mapping if your model uses "CUA" style keys
@@ -53,8 +54,8 @@ class BasePlaywrightComputer:
 
     def __init__(self):
         self._playwright = None
-        self._browser: Browser | None = None
-        self._page: Page | None = None
+        self._browser: Optional[Browser] = None
+        self._page: Optional[Page] = None
 
     def __enter__(self):
         # Start Playwright and call the subclass hook for getting browser/page

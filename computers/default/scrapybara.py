@@ -1,8 +1,10 @@
 import os
 import time
+from typing import Optional
+
 from dotenv import load_dotenv
 from scrapybara import Scrapybara
-from playwright.sync_api import sync_playwright, Browser, Page
+from playwright.sync_api import Browser, Page, sync_playwright
 from utils import BLOCKED_DOMAINS
 
 load_dotenv()
@@ -46,8 +48,8 @@ class ScrapybaraBrowser:
     def __init__(self):
         self.client = Scrapybara(api_key=os.getenv("SCRAPYBARA_API_KEY"))
         self._playwright = None
-        self._browser: Browser | None = None
-        self._page: Page | None = None
+        self._browser: Optional[Browser] = None
+        self._page: Optional[Page] = None
 
     def __enter__(self):
         print("Starting scrapybara browser")
