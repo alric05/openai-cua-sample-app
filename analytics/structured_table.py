@@ -21,11 +21,11 @@ def build_structured_table(
     log_path: str
         Path to the JSON Lines log file produced by ``AnalyticsLogger``.
     output_csv: str, optional
-        Destination path for the structured CSV. Defaults to the same name as
-        ``log_path`` with ``.csv`` extension.
+        Destination path for the structured CSV. Defaults to ``steps.csv``
+        in the same directory as ``log_path``.
     image_dir: str, optional
         Directory where extracted screenshots will be written. Defaults to a
-        sibling of ``log_path`` with ``_images`` suffix.
+        ``screenshots`` subdirectory next to ``log_path``.
 
     Returns
     -------
@@ -33,10 +33,11 @@ def build_structured_table(
         The path to the generated CSV file.
     """
 
+    log_dir = os.path.dirname(log_path)
     if output_csv is None:
-        output_csv = os.path.splitext(log_path)[0] + ".csv"
+        output_csv = os.path.join(log_dir, "steps.csv")
     if image_dir is None:
-        image_dir = os.path.splitext(log_path)[0] + "_images"
+        image_dir = os.path.join(log_dir, "screenshots")
     os.makedirs(image_dir, exist_ok=True)
 
     step_counters: Dict[str, int] = {}

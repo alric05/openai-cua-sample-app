@@ -23,17 +23,20 @@ python cli.py --computer local-playwright
 
 ### Analytics logging
 
-Every run of the CLI writes interaction analytics to a JSONL file under the
-`logs/` directory. Each user prompt and the model's subsequent actions (such as
-computer interactions, reasoning, and messages) are recorded along with timing
-information and any screenshots in base64 format. These logs can be used to
-compare the behaviour of multiple agents running in parallel or to perform
-custom analysis of agent activity.
+Every run of the CLI writes interaction analytics to a unique subdirectory
+under the `logs/` directory named after the agent identifier. This folder
+contains a `log.jsonl` file for raw events, a `steps.csv` table and a
+`screenshots/` subdirectory. Each user prompt and the model's subsequent actions
+(such as computer interactions, reasoning, and messages) are recorded along
+with timing information and any screenshots in base64 format. These logs can be
+used to compare the behaviour of multiple agents running in parallel or to
+perform custom analysis of agent activity.
 
 The helper function `analytics.build_structured_table()` converts a log file
-into a structured CSV table. Screenshots are extracted to image files and the
-table captures the agent, prompt and step identifiers along with action details
-such as click coordinates or typed text.
+into the `steps.csv` table and writes extracted screenshots to the
+`screenshots/` directory by default. The table captures the agent, prompt and
+step identifiers along with action details such as click coordinates or typed
+text.
 
 > [!NOTE]  
 > The first time you run this, if you haven't used Playwright before, you will be prompted to install dependencies. Execute the command suggested, which will depend on your OS.

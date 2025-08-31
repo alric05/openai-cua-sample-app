@@ -8,8 +8,10 @@ from typing import Any, Dict
 class AnalyticsLogger:
     """Persist interaction events for later analysis.
 
-    Each run of the CLI creates a unique log file in JSON Lines format so that
-    multiple agents running in parallel do not clobber each other's data.
+    Each run of the CLI creates a unique directory under ``log_dir`` named
+    after the agent identifier. This ensures that multiple agents running in
+    parallel do not clobber each other's data and keeps related artifacts
+    (log file, CSV table, screenshots) together.
     """
 
     def __init__(self, log_dir: str = "logs"):
@@ -18,7 +20,11 @@ class AnalyticsLogger:
         run_ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
         # Unique identifier for a single agent session.
         self.agent_id = f"{run_ts}_{uuid.uuid4()}"
-        self.log_path = os.path.join(self.log_dir, f"{self.agent_id}.jsonl")
+        # Directory dedicated to this agent's run.
+        self.agent_dir = os.path.join(self.log_dir, self.agent_id)
+        os.makedirs(self.agent_dir, exist_ok=True)
+        # JSONL log for the agent's interaction events.
+        self.log_path = os.path.join(self.agent_dir, "log.jsonl")
 
     def log(self, record: Dict[str, Any]) -> None:
         """Append a record to the log file."""
