@@ -32,11 +32,10 @@ def test_build_structured_table(tmp_path: Path) -> None:
         }
     )
 
-    log_file = next(log_dir.glob("*.jsonl"))
-    out_csv = tmp_path / "structured.csv"
-    build_structured_table(str(log_file), str(out_csv))
+    log_file = log_dir / logger.agent_id / "log.jsonl"
+    out_csv = build_structured_table(str(log_file))
 
-    assert out_csv.exists()
+    assert Path(out_csv).exists()
     with open(out_csv, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
 
@@ -48,6 +47,6 @@ def test_build_structured_table(tmp_path: Path) -> None:
     # Ensure screenshot was extracted
     screenshot_file = prompt_rows[1]["Screenshot"]
     assert screenshot_file
-    image_dir = Path(str(log_file).replace(".jsonl", "_images"))
+    image_dir = log_dir / logger.agent_id / "screenshots"
     image_path = image_dir / screenshot_file
     assert image_path.exists()
