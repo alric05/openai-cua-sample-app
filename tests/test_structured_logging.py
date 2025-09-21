@@ -1,4 +1,5 @@
 import csv
+import json
 from pathlib import Path
 
 from analytics import AnalyticsLogger, build_structured_table
@@ -50,3 +51,43 @@ def test_build_structured_table(tmp_path: Path) -> None:
     image_dir = log_dir / logger.agent_id / "screenshots"
     image_path = image_dir / screenshot_file
     assert image_path.exists()
+
+
+def test_build_structured_table_creates_agent_scoped_screenshots(tmp_path: Path) -> None:
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    log_file = log_dir / "log.jsonl"
+    agent_id = "agent-123"
+    prompt_id = "prompt-456"
+
+    with open(log_file, "w", encoding="utf-8") as f:
+        f.write(
+            json.dumps(
+                {
+                    "type": "user_prompt",
+                    "prompt_id": prompt_id,
+                    "content": "hello",
+                    "agent_id": agent_id,
+                }
+            )
+            + "\n"
+        )
+        f.write(
+            json.dumps(
+                {
+                    "type": "computer_call",
+                    "prompt_id": prompt_id,
+                    "agent_id": agent_id,
+                    "action": {"type": "click", "x": 1, "y": 2},
+                    "screenshot": PIXEL_BASE64,
+                }
+            )
+            + "\n"
+        )
+
+    build_structured_table(str(log_file))
+
+    scoped_dir = log_dir / agent_id / "screenshots"
+    assert scoped_dir.exists()
+    assert (scoped_dir / f"{prompt_id}_1.png").exists()
+    assert not (log_dir / "screenshots").exists()

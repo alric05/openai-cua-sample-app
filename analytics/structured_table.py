@@ -2,7 +2,8 @@ import os
 import json
 import csv
 import base64
-from typing import Dict, Any, Optional, List
+from itertools import chain
+from typing import Dict, Any, Iterable, Optional, List
 
 def build_structured_table(
     log_path: str,
@@ -36,16 +37,32 @@ def build_structured_table(
     log_dir = os.path.dirname(log_path)
     if output_csv is None:
         output_csv = os.path.join(log_dir, "steps.csv")
-    if image_dir is None:
-        image_dir = os.path.join(log_dir, "screenshots")
-    os.makedirs(image_dir, exist_ok=True)
+
+    def _default_image_dir(record: Dict[str, Any]) -> str:
+        agent_id = record.get("agent_id") or record.get("run_id")
+        parent_name = os.path.basename(os.path.normpath(log_dir))
+        if agent_id and parent_name == "logs":
+            return os.path.join(log_dir, agent_id, "screenshots")
+        return os.path.join(log_dir, "screenshots")
 
     step_counters: Dict[str, int] = {}
     rows: List[Dict[str, Any]] = []
 
     with open(log_path, "r", encoding="utf-8") as f:
-        for line in f:
-            record = json.loads(line)
+        first_line = f.readline()
+
+        if not first_line:
+            resolved_image_dir = image_dir or os.path.join(log_dir, "screenshots")
+            os.makedirs(resolved_image_dir, exist_ok=True)
+            records_iter: Iterable[Dict[str, Any]] = []
+        else:
+            first_record = json.loads(first_line)
+            resolved_image_dir = image_dir or _default_image_dir(first_record)
+            os.makedirs(resolved_image_dir, exist_ok=True)
+
+            records_iter = chain([first_record], (json.loads(rest_line) for rest_line in f))
+
+        for record in records_iter:
             agent_id = record.get("agent_id") or record.get("run_id")
             prompt_id = record.get("prompt_id")
             record_type = record.get("type")
@@ -81,7 +98,7 @@ def build_structured_table(
                 if "screenshot" in record:
                     image_bytes = base64.b64decode(record["screenshot"])
                     screenshot_file = f"{prompt_id}_{step_id}.png"
-                    with open(os.path.join(image_dir, screenshot_file), "wb") as img_f:
+                    with open(os.path.join(resolved_image_dir, screenshot_file), "wb") as img_f:
                         img_f.write(image_bytes)
 
             rows.append(
