@@ -5,6 +5,7 @@ from computers.default import *
 from computers import computers_config
 from analytics.logger import AnalyticsLogger
 
+logger = AnalyticsLogger()
 
 def acknowledge_safety_check_callback(message: str) -> bool:
     response = input(
@@ -47,7 +48,6 @@ def main():
     )
     args = parser.parse_args()
     ComputerClass = computers_config[args.computer]
-    logger = AnalyticsLogger()
 
     with ComputerClass() as computer:
         agent = Agent(
