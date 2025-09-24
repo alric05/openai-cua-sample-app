@@ -1,6 +1,7 @@
 import time
 import base64
 from typing import Dict, List, Literal, Optional
+from urllib.parse import urlparse
 
 from playwright.sync_api import Browser, Page, sync_playwright
 from utils import check_blocklisted_url
@@ -84,6 +85,58 @@ class BasePlaywrightComputer:
 
     def get_current_url(self) -> str:
         return self._page.url
+
+    def get_page_metadata(self) -> Dict[str, str]:
+        """Return metadata for the currently focused page."""
+
+        metadata: Dict[str, str] = {}
+
+        if not self._page:
+            return metadata
+
+        try:
+            url = self._page.url
+        except Exception:
+            url = ""
+
+        metadata["full_url"] = url
+
+        parsed = urlparse(url)
+
+        if parsed.scheme:
+            metadata["scheme"] = parsed.scheme
+        if parsed.netloc:
+            metadata["domain"] = parsed.netloc
+        if parsed.path:
+            metadata["path"] = parsed.path
+        if parsed.query:
+            metadata["query"] = parsed.query
+        if parsed.fragment:
+            metadata["fragment"] = parsed.fragment
+
+        short_url_parts = []
+        if parsed.netloc:
+            short_url_parts.append(parsed.netloc)
+        if parsed.path and parsed.path != "/":
+            short_url_parts.append(parsed.path)
+        if short_url_parts:
+            metadata["short_url"] = "".join(short_url_parts)
+        elif url:
+            metadata["short_url"] = url
+
+        try:
+            metadata["page_title"] = self._page.title()
+        except Exception:
+            pass
+
+        try:
+            referrer = self._page.evaluate("document.referrer")
+        except Exception:
+            referrer = None
+        if referrer:
+            metadata["referrer"] = referrer
+
+        return metadata
 
     # --- Common "Computer" actions ---
     def screenshot(self) -> str:

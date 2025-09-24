@@ -117,7 +117,21 @@ class Agent:
             if self.computer.get_environment() == "browser":
                 current_url = self.computer.get_current_url()
                 check_blocklisted_url(current_url)
-                call_output["output"]["current_url"] = current_url
+
+                metadata = {}
+                get_metadata = getattr(self.computer, "get_page_metadata", None)
+                if callable(get_metadata):
+                    metadata = get_metadata() or {}
+
+                if not metadata.get("full_url"):
+                    metadata["full_url"] = current_url
+
+                call_output["output"]["current_url"] = metadata.get("full_url", current_url)
+                if metadata:
+                    call_output["output"]["page_metadata"] = metadata
+                    record["page_metadata"] = metadata
+                else:
+                    record["current_url"] = current_url
 
             output_items = [call_output]
             record.update(

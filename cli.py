@@ -67,6 +67,18 @@ def main():
             if not args.start_url.startswith("http"):
                 args.start_url = "https://" + args.start_url
             agent.computer.goto(args.start_url)
+            get_metadata = getattr(agent.computer, "get_page_metadata", None)
+            if callable(get_metadata):
+                metadata = get_metadata() or {}
+                if not metadata.get("full_url"):
+                    metadata["full_url"] = agent.computer.get_current_url()
+                logger.log(
+                    {
+                        "type": "browser_state",
+                        "event": "initial_navigation",
+                        "metadata": metadata,
+                    }
+                )
 
         while True:
             try:
