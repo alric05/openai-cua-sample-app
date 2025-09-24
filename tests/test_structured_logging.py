@@ -21,6 +21,11 @@ def test_build_structured_table(tmp_path: Path) -> None:
             "action": {"type": "click", "x": 1, "y": 2},
             "screenshot": PIXEL_BASE64,
             "duration": 0.5,
+            "page_metadata": {
+                "full_url": "https://example.com/",
+                "page_title": "Example Domain",
+                "domain": "example.com",
+            },
         }
     )
     logger.log(
@@ -45,6 +50,9 @@ def test_build_structured_table(tmp_path: Path) -> None:
     prompt_rows = [r for r in rows if r["Prompt_Id"] == prompt_id]
     assert prompt_rows[0]["Step_Id"] == "0"
     assert prompt_rows[1]["Step_Id"] == "1"
+    assert prompt_rows[1]["URL"] == "https://example.com/"
+    assert prompt_rows[1]["Page_Title"] == "Example Domain"
+    assert prompt_rows[1]["Domain"] == "example.com"
     # Ensure screenshot was extracted
     screenshot_file = prompt_rows[1]["Screenshot"]
     assert screenshot_file
