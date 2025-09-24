@@ -46,6 +46,12 @@ def main():
         help="Start the browsing session with a specific URL (only for browser environments).",
         default="https://bing.com",
     )
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        help="Maximum number of model round trips to run before returning a capped response.",
+        default=None,
+    )
     args = parser.parse_args()
     ComputerClass = computers_config[args.computer]
 
@@ -78,6 +84,7 @@ def main():
                 show_images=args.show,
                 debug=args.debug,
                 prompt_id=prompt_id,
+                max_steps=args.max_steps,
             )
             items += output_items
             args.input = None

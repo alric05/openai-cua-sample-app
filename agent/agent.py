@@ -146,15 +146,38 @@ class Agent:
         debug: bool = False,
         show_images: bool = False,
         prompt_id: Optional[str] = None,
+        max_steps: Optional[int] = None,
     ):
         self.print_steps = print_steps
         self.debug = debug
         self.show_images = show_images
         self.current_prompt_id = prompt_id
         new_items = []
+        step_count = 0
 
-        # keep looping until we get a final response
-        while new_items[-1].get("role") != "assistant" if new_items else True:
+        # keep looping until we get a final response or hit the step ceiling
+        while True:
+            if new_items and new_items[-1].get("role") == "assistant":
+                break
+
+            if max_steps is not None and step_count >= max_steps:
+                limit_message = {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "text": (
+                                "Reached the configured maximum of "
+                                f"{max_steps} steps without a final assistant response."
+                                " Stopping further processing."
+                            )
+                        }
+                    ],
+                }
+                new_items.append(limit_message)
+                new_items += self.handle_item(limit_message)
+                break
+
             self.debug_print([sanitize_message(msg) for msg in input_items + new_items])
 
             response = create_response(
@@ -172,5 +195,7 @@ class Agent:
                 new_items += response["output"]
                 for item in response["output"]:
                     new_items += self.handle_item(item)
+
+            step_count += 1
 
         return new_items

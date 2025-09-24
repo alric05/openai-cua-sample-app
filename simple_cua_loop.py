@@ -1,3 +1,5 @@
+import argparse
+
 from computers import Computer
 from computers import LocalPlaywrightComputer
 from utils import create_response, check_blocklisted_url
@@ -55,6 +57,15 @@ def handle_item(item, computer: Computer):
 
 def main():
     """Run the CUA (Computer Use Assistant) loop, using Local Playwright."""
+    parser = argparse.ArgumentParser(description="Run the simple CUA loop.")
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        help="Maximum number of model round trips to execute before returning a capped response.",
+    )
+    args = parser.parse_args()
+
     with LocalPlaywrightComputer() as computer:
         dimensions = computer.get_dimensions()
         tools = [
@@ -70,8 +81,30 @@ def main():
         while True:  # get user input forever
             user_input = input("> ")
             items.append({"role": "user", "content": user_input})
+            step_count = 0
 
             while True:  # keep looping until we get a final response
+                if items and items[-1].get("role") == "assistant":
+                    break
+
+                if args.max_steps is not None and step_count >= args.max_steps:
+                    limit_message = {
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "text": (
+                                    "Reached the configured maximum of "
+                                    f"{args.max_steps} steps without a final assistant response."
+                                    " Stopping further processing."
+                                )
+                            }
+                        ],
+                    }
+                    items.append(limit_message)
+                    items += handle_item(limit_message, computer)
+                    break
+
                 response = create_response(
                     model="computer-use-preview",
                     input=items,
@@ -88,8 +121,7 @@ def main():
                 for item in response["output"]:
                     items += handle_item(item, computer)
 
-                if items[-1].get("role") == "assistant":
-                    break
+                step_count += 1
 
 
 if __name__ == "__main__":
