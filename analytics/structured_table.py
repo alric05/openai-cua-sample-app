@@ -74,6 +74,23 @@ def build_structured_table(
             y = ""
             text = ""
 
+            metadata: Dict[str, Any] = {}
+            # Browser metadata can be stored on different keys depending on the
+            # event type. Prefer the rich ``page_metadata`` payload emitted from
+            # computer actions, then fall back to more generic metadata or the
+            # current URL if present.
+            if isinstance(record.get("page_metadata"), dict):
+                metadata = record["page_metadata"]
+            elif isinstance(record.get("metadata"), dict):
+                metadata = record["metadata"]
+
+            current_url = metadata.get("full_url") or record.get("current_url", "")
+            page_title = metadata.get("page_title", "")
+            domain = metadata.get("domain", "")
+            path = metadata.get("path", "")
+            short_url = metadata.get("short_url", "")
+            referrer = metadata.get("referrer", "")
+
             if record_type == "user_prompt":
                 step_id = 0
                 text = record.get("content", "")
@@ -114,6 +131,12 @@ def build_structured_table(
                     "Duration": duration,
                     "Timestamp": timestamp,
                     "Screenshot": screenshot_file,
+                    "URL": current_url,
+                    "Page_Title": page_title,
+                    "Domain": domain,
+                    "Path": path,
+                    "Short_URL": short_url,
+                    "Referrer": referrer,
                 }
             )
 
@@ -129,6 +152,12 @@ def build_structured_table(
         "Duration",
         "Timestamp",
         "Screenshot",
+        "URL",
+        "Page_Title",
+        "Domain",
+        "Path",
+        "Short_URL",
+        "Referrer",
     ]
 
     with open(output_csv, "w", encoding="utf-8", newline="") as csvfile:
