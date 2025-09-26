@@ -9,6 +9,33 @@ class LocalPlaywrightBrowser(BasePlaywrightComputer):
         super().__init__()
         self.headless = headless
 
+    def get_dimensions(self) -> tuple[int, int]:
+        """Return a larger default window size for the local browser."""
+        return 1600, 900
+
+    def _apply_page_settings(self, page: Page) -> None:
+        """Ensure every page matches the desired viewport and zoom level."""
+        width, height = self.get_dimensions()
+        page.set_viewport_size({"width": width, "height": height})
+
+        page.evaluate(
+            """
+            (() => {
+                const applyZoom = () => {
+                    if (document && document.body) {
+                        document.body.style.zoom = '75%';
+                    }
+                };
+
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    applyZoom();
+                } else {
+                    document.addEventListener('DOMContentLoaded', applyZoom, { once: true });
+                }
+            })();
+            """
+        )
+
     def _get_browser_and_page(self) -> tuple[Browser, Page]:
         width, height = self.get_dimensions()
         launch_args = [
@@ -29,7 +56,7 @@ class LocalPlaywrightBrowser(BasePlaywrightComputer):
         context.on("page", self._handle_new_page)
 
         page = context.new_page()
-        page.set_viewport_size({"width": width, "height": height})
+        self._apply_page_settings(page)
         page.on("close", self._handle_page_close)
 
         page.goto("https://bing.com")
@@ -40,6 +67,7 @@ class LocalPlaywrightBrowser(BasePlaywrightComputer):
         """Handle the creation of a new page."""
         print("New page created")
         self._page = page
+        self._apply_page_settings(page)
         page.on("close", self._handle_page_close)
 
     def _handle_page_close(self, page: Page):
