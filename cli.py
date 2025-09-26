@@ -47,7 +47,7 @@ def main():
         default="https://bing.com",
     )
     parser.add_argument(
-        "--max-steps",
+        "--max-actions",
         type=int,
         help="Maximum number of model round trips to run before returning a capped response.",
         default=None,
@@ -104,7 +104,7 @@ def main():
                 show_images=args.show,
                 debug=args.debug,
                 prompt_id=prompt_id,
-                max_steps=args.max_steps,
+                max_actions=args.max_actions,
             )
             items += output_items
             args.input = None
@@ -114,6 +114,12 @@ def main():
                 for item in output_items
             ):
                 print("Assistant message received; stopping due to --stop-on-message.")
+                break
+
+            if args.max_actions is not None and any(
+                item.get("type") == "max-actions" for item in output_items
+            ):
+                print("Maximum actions reached; stopping due to --max-actions.")
                 break
 
 

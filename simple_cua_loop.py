@@ -14,7 +14,7 @@ def acknowledge_safety_check_callback(message: str) -> bool:
 
 def handle_item(item, computer: Computer):
     """Handle each item; may cause a computer action + screenshot."""
-    if item["type"] in {"message", "max-steps"}:  # print messages
+    if item["type"] in {"message", "max-actions"}:  # print messages
         print(item["content"][0]["text"])
 
     if item["type"] == "computer_call":  # perform computer actions
@@ -59,7 +59,7 @@ def main():
     """Run the CUA (Computer Use Assistant) loop, using Local Playwright."""
     parser = argparse.ArgumentParser(description="Run the simple CUA loop.")
     parser.add_argument(
-        "--max-steps",
+        "--max-actions",
         type=int,
         default=None,
         help="Maximum number of model round trips to execute before returning a capped response.",
@@ -81,21 +81,21 @@ def main():
         while True:  # get user input forever
             user_input = input("> ")
             items.append({"role": "user", "content": user_input})
-            step_count = 0
+            action_count = 0
 
             while True:  # keep looping until we get a final response
                 if items and items[-1].get("role") == "assistant":
                     break
 
-                if args.max_steps is not None and step_count >= args.max_steps:
+                if args.max_actions is not None and action_count >= args.max_actions:
                     limit_message = {
-                        "type": "max-steps",
+                        "type": "max-actions",
                         "role": "assistant",
                         "content": [
                             {
                                 "text": (
                                     "Reached the configured maximum of "
-                                    f"{args.max_steps} steps without a final assistant response."
+                                    f"{args.max_actions} actions without a final assistant response."
                                     " Stopping further processing."
                                 )
                             }
@@ -121,7 +121,11 @@ def main():
                 for item in response["output"]:
                     items += handle_item(item, computer)
 
-                step_count += 1
+                action_count += 1
+
+            if items and items[-1].get("type") == "max-actions":
+                print("Maximum actions reached; stopping due to --max-actions.")
+                break
 
 
 if __name__ == "__main__":

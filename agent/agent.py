@@ -57,7 +57,7 @@ class Agent:
         record = {"prompt_id": self.current_prompt_id, "type": item.get("type")}
         output_items = []
 
-        if item["type"] in {"message", "max-steps"}:
+        if item["type"] in {"message", "max-actions"}:
             if self.print_steps:
                 print(item["content"][0]["text"])
             record["role"] = item.get("role")
@@ -160,29 +160,29 @@ class Agent:
         debug: bool = False,
         show_images: bool = False,
         prompt_id: Optional[str] = None,
-        max_steps: Optional[int] = None,
+        max_actions: Optional[int] = None,
     ):
         self.print_steps = print_steps
         self.debug = debug
         self.show_images = show_images
         self.current_prompt_id = prompt_id
         new_items = []
-        step_count = 0
+        action_count = 0
 
-        # keep looping until we get a final response or hit the step ceiling
+        # keep looping until we get a final response or hit the action ceiling
         while True:
             if new_items and new_items[-1].get("role") == "assistant":
                 break
 
-            if max_steps is not None and step_count >= max_steps:
+            if max_actions is not None and action_count >= max_actions:
                 limit_message = {
-                    "type": "max-steps",
+                    "type": "max-actions",
                     "role": "assistant",
                     "content": [
                         {
                             "text": (
                                 "Reached the configured maximum of "
-                                f"{max_steps} steps without a final assistant response."
+                                f"{max_actions} actions without a final assistant response."
                                 " Stopping further processing."
                             )
                         }
@@ -210,6 +210,6 @@ class Agent:
                 for item in response["output"]:
                     new_items += self.handle_item(item)
 
-            step_count += 1
+            action_count += 1
 
         return new_items
