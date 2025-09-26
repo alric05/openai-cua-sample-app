@@ -78,7 +78,7 @@ The CLI (`cli.py`) is the easiest way to get started with CUA. It accepts the fo
 For example, you can launch an autonomous browsing session like this:
 
 ```shell
-python cli.py --start-url https://www.gov.uk --stop-on-message --max-steps 20 --input "Act fully autonomously without asking guiding questions to the user until you complete your objective. Objective: Navigate this website to find research publications from France."
+python cli.py --start-url https://www.gov.uk --stop-on-message --max-actions 20 --input "Act fully autonomously without asking guiding questions to the user until you complete your objective. Objective: Navigate this website to find research publications from France."
 ```
 
 ### Run examples (optional)
