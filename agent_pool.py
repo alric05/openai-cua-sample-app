@@ -124,7 +124,15 @@ class Runner:
         # Where to write logs
         stamp = now_stamp()
         safe_name = slugify(job_name)
-        run_dir = ensure_dir(self.log_root / f"{stamp}_{safe_name}_{run_index:03d}")
+        custom_agent_id = job_cfg.get("agent_id")
+        if custom_agent_id:
+            safe_agent_id = os.path.basename(os.path.normpath(str(custom_agent_id)))
+            if not safe_agent_id:
+                safe_agent_id = f"{stamp}_{safe_name}_{run_index:03d}"
+        else:
+            safe_agent_id = f"{stamp}_{safe_name}_{run_index:03d}"
+
+        run_dir = ensure_dir(self.log_root / safe_agent_id)
         stdout_path = run_dir / "stdout.log"
         stderr_path = run_dir / "stderr.log"
         meta_path = run_dir / "meta.json"
@@ -147,6 +155,12 @@ class Runner:
         with open(stdout_path, "w", encoding="utf-8") as fout, \
              open(stderr_path, "w", encoding="utf-8") as ferr:
 
+            env = os.environ.copy()
+            extra_env = job_cfg.get("env")
+            if isinstance(extra_env, dict):
+                env.update({str(k): str(v) for k, v in extra_env.items()})
+            env["CUA_AGENT_ID"] = safe_agent_id
+
             proc = subprocess.Popen(
                 cmd,
                 shell=self.use_shell,
@@ -154,7 +168,8 @@ class Runner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                bufsize=1
+                bufsize=1,
+                env=env
             )
 
             # Stream stdout/stderr concurrently

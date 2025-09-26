@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from pathlib import Path
 
 from analytics import AnalyticsLogger, build_structured_table
@@ -99,3 +100,15 @@ def test_build_structured_table_creates_agent_scoped_screenshots(tmp_path: Path)
     assert scoped_dir.exists()
     assert (scoped_dir / f"{prompt_id}_1.png").exists()
     assert not (log_dir / "screenshots").exists()
+
+
+def test_logger_uses_env_agent_id(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("CUA_AGENT_ID", "custom/agent")
+    log_dir = tmp_path / "logs"
+    logger = AnalyticsLogger(log_dir=str(log_dir))
+
+    assert logger.agent_id == "agent"
+    expected_dir = log_dir / "agent"
+    assert logger.agent_dir == os.path.join(str(log_dir), "agent")
+    assert expected_dir.exists()
+    assert logger.log_path == os.path.join(str(expected_dir), "log.jsonl")
