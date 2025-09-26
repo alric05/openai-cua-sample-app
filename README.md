@@ -72,6 +72,7 @@ The CLI (`cli.py`) is the easiest way to get started with CUA. It accepts the fo
 - `--debug`: Enable debug mode.
 - `--show`: Show images (screenshots) during the execution.
 - `--start-url`: Start the browsing session with a specific URL (only for browser environments). By default, the CLI will start the browsing session with `https://bing.com`.
+- `--stop-on-message`: Immediately stop the session after the assistant returns a message to the user.
 
 ### Run examples (optional)
 
