@@ -57,7 +57,7 @@ class Agent:
         record = {"prompt_id": self.current_prompt_id, "type": item.get("type")}
         output_items = []
 
-        if item["type"] == "message":
+        if item["type"] in {"message", "max-steps"}:
             if self.print_steps:
                 print(item["content"][0]["text"])
             record["role"] = item.get("role")
@@ -176,7 +176,7 @@ class Agent:
 
             if max_steps is not None and step_count >= max_steps:
                 limit_message = {
-                    "type": "message",
+                    "type": "max-steps",
                     "role": "assistant",
                     "content": [
                         {

@@ -14,7 +14,7 @@ def acknowledge_safety_check_callback(message: str) -> bool:
 
 def handle_item(item, computer: Computer):
     """Handle each item; may cause a computer action + screenshot."""
-    if item["type"] == "message":  # print messages
+    if item["type"] in {"message", "max-steps"}:  # print messages
         print(item["content"][0]["text"])
 
     if item["type"] == "computer_call":  # perform computer actions
@@ -89,7 +89,7 @@ def main():
 
                 if args.max_steps is not None and step_count >= args.max_steps:
                     limit_message = {
-                        "type": "message",
+                        "type": "max-steps",
                         "role": "assistant",
                         "content": [
                             {
