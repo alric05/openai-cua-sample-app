@@ -277,7 +277,7 @@ def main():
 
 SIMULATION: Dict[str, Any] = {
     # Example 1 — your exact GOV.UK command run 2 times, sequentially.
-    "govuk_fr_research": {
+    "agent_1": {
         "cli_line": (
             'python cli.py '
             '--start-url https://www.gov.uk '
@@ -287,29 +287,14 @@ SIMULATION: Dict[str, Any] = {
             'until you complete your objective. Objective: Navigate this website to find research '
             'publications from France."'
         ),
-        "n": 2,
+        "n": 1,
         # Set cwd to the folder where cli.py lives (uncomment & edit):
         # "cwd": "/absolute/path/to/your/service/folder",
         # Optional per-job overrides:
-        # "timeout_sec": 1800,
-        # "sleep_between_runs_sec": 1.0,
+        "timeout_sec": 400,
+        "sleep_between_runs_sec": 1.0,
         # "retries": 0
-    },
-
-    # Example 2 — a different site / objective that should start **after**
-    # all runs of Example 1 have finished.
-    "another_task": {
-        "cli_line": (
-            'python cli.py '
-            '--start-url https://www.example.org '
-            '--stop-on-message '
-            '--max-actions 15 '
-            '--input "Act fully autonomously until you complete your objective. '
-            'Objective: Collect policy press releases from 2023."'
-        ),
-        "n": 1,
-        # "cwd": "/absolute/path/to/your/service/folder"
-    },
+    }
 
     # You can add more entries; they will be processed in this order.
     # "third_task": {"cli_line": "...", "n": 3}
@@ -317,3 +302,4 @@ SIMULATION: Dict[str, Any] = {
 
 if __name__ == "__main__":
     main()
+
