@@ -52,6 +52,14 @@ def main():
         help="Maximum number of model round trips to run before returning a capped response.",
         default=None,
     )
+    parser.add_argument(
+        "--stop-on-message",
+        action="store_true",
+        help=(
+            "Stop the agent automatically once it produces a message for the user. "
+            "Useful for terminating the session after the first assistant reply."
+        ),
+    )
     args = parser.parse_args()
     ComputerClass = computers_config[args.computer]
 
@@ -100,6 +108,13 @@ def main():
             )
             items += output_items
             args.input = None
+
+            if args.stop_on_message and any(
+                item.get("type") == "message" and item.get("role") == "assistant"
+                for item in output_items
+            ):
+                print("Assistant message received; stopping due to --stop-on-message.")
+                break
 
 
 if __name__ == "__main__":
