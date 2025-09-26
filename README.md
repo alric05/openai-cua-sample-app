@@ -72,7 +72,7 @@ The CLI (`cli.py`) is the easiest way to get started with CUA. It accepts the fo
 - `--debug`: Enable verbose debug logging for each step of the run.
 - `--show`: Display screenshots that are generated while the agent is running.
 - `--start-url <url>`: Begin the session from a specific URL (browser-based environments only). Defaults to `https://bing.com` if not supplied.
-- `--max-steps <int>`: Cap the number of model round trips the agent may take before the run ends. By default, no cap is applied.
+- `--max-actions <int>`: Cap the number of model round trips the agent may take before the run ends. By default, no cap is applied.
 - `--stop-on-message`: Stop the agent automatically once it produces a message for the user.
 
 For example, you can launch an autonomous browsing session like this:
