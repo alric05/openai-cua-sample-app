@@ -67,12 +67,19 @@ This repository defines two lightweight abstractions to make interacting with CU
 
 The CLI (`cli.py`) is the easiest way to get started with CUA. It accepts the following arguments:
 
-- `--computer`: The computer environment to use. See the [Computer Environments](#computer-environments) section below for options. By default, the CLI will use the `local-playwright` environment.
-- `--input`: The initial input to the agent (optional: the CLI will prompt you for input if not provided)
-- `--debug`: Enable debug mode.
-- `--show`: Show images (screenshots) during the execution.
-- `--start-url`: Start the browsing session with a specific URL (only for browser environments). By default, the CLI will start the browsing session with `https://bing.com`.
-- `--stop-on-message`: Immediately stop the session after the assistant returns a message to the user.
+- `--computer <name>`: Choose the computer environment to use. Valid values are listed in [Computer Environments](#computer-environments). Defaults to `local-playwright`.
+- `--input "<text>"`: Provide the initial user message instead of being prompted interactively.
+- `--debug`: Enable verbose debug logging for each step of the run.
+- `--show`: Display screenshots that are generated while the agent is running.
+- `--start-url <url>`: Begin the session from a specific URL (browser-based environments only). Defaults to `https://bing.com` if not supplied.
+- `--max-steps <int>`: Cap the number of model round trips the agent may take before the run ends. By default, no cap is applied.
+- `--stop-on-message`: Stop the agent automatically once it produces a message for the user.
+
+For example, you can launch an autonomous browsing session like this:
+
+```shell
+python cli.py --start-url https://www.gov.uk --stop-on-message --max-steps 20 --input «Act fully autonomously without asking guiding questions to the user until you complete your objective. Objective: Navigate this website to find research publications from France.»
+```
 
 ### Run examples (optional)
 
