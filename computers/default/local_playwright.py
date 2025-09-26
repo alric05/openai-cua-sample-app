@@ -8,6 +8,10 @@ class LocalPlaywrightBrowser(BasePlaywrightComputer):
     def __init__(self, headless: bool = False):
         super().__init__()
         self.headless = headless
+        
+    def get_dimensions(self) -> tuple[int, int]:
+        """Return a larger viewport for the local browser."""
+        return (1600, 900)
 
     def _get_browser_and_page(self) -> tuple[Browser, Page]:
         width, height = self.get_dimensions()
